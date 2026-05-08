@@ -1,5 +1,11 @@
 "use client";
 
+import { Cormorant_Garamond } from "next/font/google";
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+});
 import { motion } from "framer-motion";
 import Lenis from "lenis";
 import { useEffect, useRef, useState } from "react";
@@ -12,20 +18,41 @@ import {
 
 export default function Home() {
   const audioRef = useRef(null);
+  useEffect(() => {
+  const startMusic = async () => {
+    if (!audioRef.current) return;
+
+    try {
+      await audioRef.current.play();
+    } catch (err) {
+      console.log(err);
+    }
+
+    window.removeEventListener("mousemove", startMusic);
+  };
+
+  window.addEventListener("mousemove", startMusic);
+
+  return () => {
+    window.removeEventListener("mousemove", startMusic);
+  };
+}, []);
   const cursorRef = useRef(null);
 
-const [loading, setLoading] = useState(true);
-
-const fullName = "DIVYA BOYAT";
+  const [loadingStage, setLoadingStage] = useState(0);
+  const fullName = "DIVYA BOYAT";
 
 // LOADER
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2500);
 
-return () => clearTimeout(timer);
-  }, []);
+useEffect(() => {
+  const timers = [
+   setTimeout(() => setLoadingStage(1), 2200),
+   setTimeout(() => setLoadingStage(2), 3000),
+   setTimeout(() => setLoadingStage(3), 3600),
+  ];
+
+  return () => timers.forEach(clearTimeout);
+}, []);
 
 // LENIS SCROLL
   useEffect(() => {
@@ -58,38 +85,69 @@ return () => {
     };
   }, []);
 
-if (loading) {
-    return (
-      <div className="h-screen bg-black flex items-center justify-center text-white overflow-hidden">
+if (loadingStage !== 3) {
+  return (
+    <div className="h-screen bg-gradient-to-br from-[#ffe0c3] via-[#ffc6d0] to-[#c9f0ff] flex items-center justify-center text-black overflow-hidden relative">
+
+      {/* STAGE 1 */}
+      {loadingStage === 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center"
+          className="text-center px-6"
         >
-          <motion.h1
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="text-6xl tracking-[12px] font-thin"
-          >
-            LOADING PORTFOLIO
-          </motion.h1>
+          <div className="flex flex-wrap justify-center gap-4 text-4xl md:text-7xl tracking-[6px] font-light">
 
-<motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="mt-6 text-gray-500 tracking-[6px]"
-          >
-            OF
-          </motion.p>
+            {["DEVELOP", "THE", "FUTURE", "WITH"].map((word, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.5 }}
+              >
+                {word}
+              </motion.span>
+            ))}
+
+          </div>
         </motion.div>
-      </div>
-    );
-  }
+      )}
+
+      {/* STAGE 2 */}
+      {loadingStage === 1 && (
+        <motion.h1
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-6xl md:text-[120px] tracking-[18px] font-thin"
+        >
+          DIVA
+        </motion.h1>
+      )}
+
+      {/* STAGE 3 */}
+      {loadingStage === 2 && (
+        <motion.h1
+          initial={{ opacity: 0, letterSpacing: "0px" }}
+          animate={{ opacity: 1, letterSpacing: "20px" }}
+          transition={{ duration: 1.5 }}
+          className="text-5xl md:text-[100px] font-thin"
+        >
+          AKA
+        </motion.h1>
+      )}
+
+    </div>
+  );
+}
 
 return (
-    <main className="bg-black text-white overflow-x-hidden relative z-10">
+    <main className="bg-gradient-to-br from-[#ffe0c3] via-[#ffc6d0] to-[#c9f0ff] text-black overflow-x-hidden relative z-10">
+
+  {/* LOCATION */}
+  <div className="fixed top-4 left-4 z-50 text-[10px] text-black-400 bg-white/40 px-3 py-1 rounded-full backdrop-blur font-mono">
+   India, GGN | 28.4595° N, 77.0266° E
+</div>
+
       {/* BACKGROUND EFFECTS */}
 <div className="fixed inset-0 -z-10 overflow-hidden">
 
@@ -163,8 +221,8 @@ return (
 </div>
 {/* MUSIC */}
       <audio ref={audioRef} loop>
-        <source src="/music.mp3" type="audio/mp3" />
-      </audio>
+  <source src="/music.mp3" type="audio/mp3" />
+</audio>
 
 {/* CURSOR */}
       <div
@@ -183,41 +241,62 @@ return (
 
 {/* MUSIC BUTTON */}
         <button
-          onClick={async () => {
-            if (!audioRef.current) return;
+  onClick={async () => {
+    if (!audioRef.current) return;
 
-try {
-              if (audioRef.current.paused) {
-                await audioRef.current.play();
-              } else {
-                audioRef.current.pause();
-              }
-            } catch (err) {
-              console.log(err);
-            }
-          }}
-          className="mb-12 border border-gray-700 px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all duration-300"
-        >
-          🎵 Music
-        </button>
+    try {
+      if (audioRef.current.paused) {
+        await audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }}
+  className="fixed bottom-6 right-6 z-50 bg-white/10 backdrop-blur-xl border border-white/10 px-5 py-3 rounded-full hover:scale-110 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+>
+  🎵 Music
+</button>
 
-{/* LETTER BY LETTER NAME */}
-        <h1 className="text-6xl md:text-[140px] font-thin tracking-[10px] flex flex-wrap justify-center">
-          {fullName.split("").map((letter, index) => (
-            <motion.span
-              key={index}
-              initial={{ opacity: 0, y: 80 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: index * 0.08,
-                duration: 0.5,
-              }}
-              className="inline-block"
-            >
-              {letter === " " ? "\u00A0" : letter}
-            </motion.span>
-          ))}
-        </h1>
+<h1 className="flex flex-wrap justify-center text-6xl md:text-[140px] font-thin tracking-[2px] overflow-hidden">
+
+  {/* DIVYA */}
+  {"DIVYA".split("").map((letter, index) => (
+    <motion.span
+      key={index}
+      initial={{ x: -200, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{
+        delay: index * 0.08,
+        duration: 0.7,
+      }}
+      className="inline-block"
+    >
+      {letter}
+    </motion.span>
+  ))}
+
+  {/* SPACE */}
+  <span className="mx-3"></span>
+
+  {/* BOYAT */}
+  {"BOYAT".split("").map((letter, index) => (
+    <motion.span
+      key={index + 100}
+      initial={{ x: 200, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{
+        delay: 0.5 + index * 0.08,
+        duration: 0.7,
+      }}
+      className="inline-block"
+    >
+      {letter}
+    </motion.span>
+  ))}
+
+</h1>
 
 <motion.p
           initial={{ opacity: 0 }}
@@ -288,24 +367,24 @@ try {
         className="py-32 px-6 flex justify-center"
       >
 
-        <div className="w-full max-w-4xl bg-[#0d0d0d] border border-gray-800 rounded-3xl p-8 shadow-2xl">
+        <div className="w-full max-w-4xl bg-gradient-to-br from-[#ffe0c3] via-[#ffc6d0] to-[#c9f0ff] border border-gray-800 rounded-3xl p-8 shadow-2xl">
 
           <p className="text-green-500 mb-4">
             divya@portfolio:~$
           </p>
 
-          <div className="space-y-4 text-gray-400">
+          <div className="space-y-4 text-black-400">
 
             <p>{">"} whoami</p>
-            <p className="text-white">Divya Boyat</p>
+            <p className="text-black">Divya Boyat</p>
 
             <p>{">"} skills</p>
-            <p className="text-white">
+            <p className="text-black">
               React • Next.js • JavaScript • Python • AI
             </p>
 
             <p>{">"} goal</p>
-            <p className="text-white">
+            <p className="text-black">
               Building aesthetic and immersive digital experiences.
             </p>
 
@@ -319,7 +398,7 @@ try {
 {/* TECH STACK */}
       <section className="py-20 px-6 relative z-20">
 
-<h2 className="text-center text-4xl mb-16 text-gray-300">
+<h2 className="text-center text-4xl mb-16 text-black-300">
           Tech Stack
         </h2>
 
@@ -343,10 +422,10 @@ try {
 <motion.div
               key={i}
               whileHover={{ y: -10 }}
-              className="border border-gray-800 rounded-3xl p-8 bg-white/5 backdrop-blur-xl"
+              className="border border-black-800 rounded-3xl p-8 bg-black/5 backdrop-blur-xl"
             >
 
-<h3 className="text-2xl mb-8 text-white">
+<h3 className="text-2xl mb-8 text-black">
                 {section.title}
               </h3>
 
@@ -356,7 +435,7 @@ try {
 
 <span
                     key={idx}
-                    className="px-4 py-2 rounded-full border border-gray-700 text-gray-400 hover:border-white transition"
+                    className="px-4 py-2 rounded-full border border-gray-700 text-black-400 hover:border-white transition"
                   >
                     {item}
                   </span>
@@ -379,7 +458,7 @@ try {
         className="py-32 px-6 relative z-20"
       >
 
-<h2 className="text-center text-4xl mb-16 text-gray-300">
+<h2 className="text-center text-4xl mb-16 text-black-300">
           Projects
         </h2>
 
@@ -405,11 +484,11 @@ try {
               className="w-[340px] border border-gray-800 rounded-3xl p-8 bg-white/5 backdrop-blur-xl"
             >
 
-<h3 className="text-2xl text-white mb-4">
+<h3 className="text-2xl text-black mb-4">
                 {project.title}
               </h3>
 
-<p className="text-gray-500 leading-8">
+<p className="text-black-500 leading-8">
                 {project.desc}
               </p>
 
@@ -427,22 +506,22 @@ try {
         className="py-32 text-center px-6 relative z-50"
       >
 
-<h2 className="text-5xl text-white mb-10">
+<h2 className="text-5xl text-black mb-10">
           Contact
         </h2>
 
-<div className="flex justify-center gap-8 text-3xl text-gray-500">
+<div className="flex justify-center gap-8 text-3xl text-black-500">
 
 <a
             href="mailto:iamdivya224@gmail.com"
-            className="hover:text-white transition"
+            className="hover:text-black transition"
           >
             <FaEnvelope />
           </a>
 
 <a
             href="tel:7982979245"
-            className="hover:text-white transition"
+            className="hover:text-black transition"
           >
             <FaPhone />
           </a>
@@ -451,7 +530,7 @@ try {
             href="https://linkedin.com/in/divyaboyat224"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-white transition"
+            className="hover:text-black transition"
           >
             <FaLinkedin />
           </a>
@@ -460,14 +539,14 @@ try {
             href="https://github.com/divyaaaaahhhhh"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-white transition"
+            className="hover:text-black transition"
           >
             <FaGithub />
           </a>
 
 </div>
 
-<p className="mt-12 text-gray-700">
+<p className="mt-12 text-black-700">
           © 2026 Divya Boyat Portfolio
         </p>
 
